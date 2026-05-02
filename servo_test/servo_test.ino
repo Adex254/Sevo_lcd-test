@@ -5,38 +5,36 @@
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
 Servo myServo;
 
-int servoPin = 13; // Use the pin labeled D13
-
 void setup() {
-  // 1. Start I2C for LCD
-  Wire.begin(21, 22); 
+  // 1. Exact LCD Pattern that worked
+  Wire.begin(21, 22);
   lcd.init();
-  lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.print("LCD OK...");
   
-  // 2. Wait 3 seconds - If the LCD stays on, the ESP32 is healthy
-  delay(3000); 
+  for(int i = 0; i < 3; i++) {
+    lcd.backlight();
+    delay(500);
+    lcd.noBacklight();
+    delay(500);
+  }
+  lcd.backlight(); 
+  lcd.print("ADEOYE READY");
 
-  // 3. Attach Servo
-  ESP32PWM::allocateTimer(0);
+  // 2. Wait 2 seconds so you can actually read it
+  delay(2000);
+
+  // 3. Servo Setup on Pin 18
+  // We use the most basic attach possible
   myServo.setPeriodHertz(50);
-  myServo.attach(servoPin, 500, 2400); 
-
-  lcd.clear();
-  lcd.print("SERVO STARTING");
+  myServo.attach(18, 500, 2400); 
+  
+  lcd.setCursor(0, 1);
+  lcd.print("SERVO ACTIVE");
 }
 
 void loop() {
-  // Move to 45 degrees
-  lcd.setCursor(0, 1);
-  lcd.print("Angle: 45      ");
+  // We use very small movements to prevent heavy vibration
   myServo.write(45);
-  delay(2000);
-
-  // Move to 135 degrees
-  lcd.setCursor(0, 1);
-  lcd.print("Angle: 135     ");
+  delay(1000);
   myServo.write(135);
-  delay(2000);
+  delay(1000);
 }
