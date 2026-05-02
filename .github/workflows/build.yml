@@ -1,0 +1,46 @@
+name: ESP32 Servo-LCD Build
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Arduino CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          sudo mv bin/arduino-cli /usr/local/bin/
+
+      - name: Setup ESP32 Core
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
+
+      - name: Install Libraries
+        run: |
+          arduino-cli lib install "LiquidCrystal I2C"
+          arduino-cli lib install "ESP32Servo"
+
+      - name: Compile
+        run: |
+          arduino-cli compile \
+            --fqbn esp32:esp32:esp32 \
+            --output-dir build_out \
+            ./servo_test
+
+      - name: Merge BIN
+        run: |
+          pip install esptool
+          esptool.py --chip esp32 merge_bin -o servo_firmware.bin \
+            --flash_mode dio --flash_freq 40m --flash_size 4MB \
+            0x1000 build_out/servo_test.ino.bootloader.bin \
+            0x8000 build_out/servo_test.ino.partitions.bin \
+            0x10000 build_out/servo_test.ino.bin
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: servo-test-bin
+          path: servo_firmware.bin
