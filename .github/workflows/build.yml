@@ -33,7 +33,7 @@ jobs:
       - name: Merge BIN
         run: |
           pip install esptool
-          esptool.py --chip esp32 merge_bin -o servo_firmware.bin \
+          esptool.py --chip esp32 merge_bin -o adeoye_servo.bin \
             --flash_mode dio --flash_freq 40m --flash_size 4MB \
             0x1000 build_out/servo_test.ino.bootloader.bin \
             0x8000 build_out/servo_test.ino.partitions.bin \
@@ -42,5 +42,5 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: servo-test-bin
-          path: servo_firmware.bin
+          name: servo-firmware
+          path: adeoye_servo.bin
